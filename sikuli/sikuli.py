@@ -1,8 +1,16 @@
 import os
+import sys
 
-javapath = ":" + os.path.dirname(os.path.realpath(__file__)) + "/sikuli-api-1.0.2-standalone.jar"
-os.environ['CLASSPATH'] += javapath
-print 'CLASSPATH: ', os.environ['CLASSPATH']
+if sys.platform == 'win32':
+    separator = ';'
+else:
+    separator = ':'
+    
+javapath = separator + os.path.dirname(os.path.realpath(__file__)) + "/sikuli-api-1.0.2-standalone.jar"
+if not 'CLASSPATH' in os.environ:
+    os.environ['CLASSPATH'] = javapath
+else:
+    os.environ['CLASSPATH'] += javapath
 
 from jnius import autoclass
 
