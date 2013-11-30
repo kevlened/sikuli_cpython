@@ -108,16 +108,16 @@ class Pattern:
         if isinstance(target_string, Pattern):
             p = target_string
             self.target_string = p.target_string
-            self.simularity = p.simularity
+            self.similarity = p.similarity
             self.dx, self.dy = p.dx, p.dy
         else:
             self.target_string = target_string
-            self.simularity = .7
+            self.similarity = .7
             self.dx, self.dy = 0, 0
 
 
     def exact(self):
-        self.simularity = 0.99
+        self.similarity = 0.99
         return self
 
 
@@ -126,8 +126,8 @@ class Pattern:
         return self
 
 
-    def similar(self, simularity):
-        self.simularity = simularity
+    def similar(self, similarity):
+        self.similarity = similarity
         return self
 
 
@@ -152,7 +152,7 @@ class Pattern:
             except:
                 target_file_loc = None
         target = ImageTarget(target_file_loc)
-        target.setMinScore(self.simularity)
+        target.setMinScore(self.similarity)
         return target
 
 
