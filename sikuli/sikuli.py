@@ -5,7 +5,7 @@ if sys.platform == 'win32':
     separator = ';'
 else:
     separator = ':'
-    
+
 jarpath = separator + os.path.dirname(os.path.realpath(__file__)) + "/sikuli-api-1.0.2-standalone.jar"
 if not 'CLASSPATH' in os.environ:
     os.environ['CLASSPATH'] = jarpath
@@ -26,13 +26,13 @@ ImageTarget = autoclass('org.sikuli.api.ImageTarget')
 
 
 def find(target_string, *args, **kwargs):
-    target = _get_target_from_string(target_string, *args, **kwargs)
+    target = Pattern(target_string).getTarget()
     screen = DesktopScreenRegion()
     return screen.find(target)
 
 
 def findAll(target_string, *args, **kwargs):
-    target = _get_target_from_string(target_string, *args, **kwargs)
+    target = Pattern(target_string).getTarget()
     screen = DesktopScreenRegion()
     return screen.findAll(target)
 
@@ -40,7 +40,7 @@ def findAll(target_string, *args, **kwargs):
 def wait(target_string, *args, **kwargs):
     if not duration and duration != 0:
         duration = 5000
-    target = _get_target_from_string(target_string, *args, **kwargs)
+    target = Pattern(target_string).getTarget()
     screen = DesktopScreenRegion()
     return screen.wait(target, duration)
 
@@ -49,43 +49,41 @@ def wait(target_string, *args, **kwargs):
 
 
 def exists(target_string, *args, **kwargs):
-    target = _get_target_from_string(target_string, *args, **kwargs)
+    target = Pattern(target_string).getTarget()
     screen = DesktopScreenRegion()
     try:
-        t = screen.find(target)
+        return screen.find(target)
     except Exception:
-        t = None
+        return None
 
-    return t
-    
 
 def click(target_string, *args, **kwargs):
-    t = _get_screen_loc(target_string, *args, **kwargs)
+    loc = Pattern(target_string).getLocation()
     m = DesktopMouse()
-    m.click(t)
+    m.click(loc)
 
 
 def doubleClick(target_string, *args, **kwargs):
-    t = _get_screen_loc(target_string, *args, **kwargs)
+    loc = Pattern(target_string).getLocation()
     m = DesktopMouse()
-    m.doubleClick(t)
+    m.doubleClick(loc)
 
 
 def rightClick(target_string, *args, **kwargs):
-    t = _get_screen_loc(target_string, *args, **kwargs)
+    loc = Pattern(target_string).getLocation()
     m = DesktopMouse()
-    m.rightClick(t)
+    m.rightClick(loc)
 
 
 def hover(target_string, *args, **kwargs):
-    t = _get_screen_loc(target_string, *args, **kwargs)
+    loc = Pattern(target_string).getLocation()
     m = DesktopMouse()
-    m.hover(t)
+    m.hover(loc)
 
 
 def dragDrop(target_string_1, target_string_2):
-    loc1 = _get_screen_loc(target_string_1)
-    loc2 = _get_screen_loc(target_string_2)
+    loc1 = Pattern(target_string_1).getLocation()
+    loc2 = Pattern(target_string_2).getLocation()
     m = DesktopMouse()
     m.drag(loc1)
     m.drop(loc2)
@@ -105,32 +103,69 @@ def browse(url):
     API.browse(URL(url))
 
 
-def _get_screen_loc(target_string, *args, **kwargs):
-    t = find(target_string, *args, **kwargs)
-    return t.getCenter()  
+class Pattern:
+    def __init__(self, target_string):
+        if isinstance(target_string, Pattern):
+            p = target_string
+            self.target_string = p.target_string
+            self.simularity = p.simularity
+            self.dx, self.dy = p.dx, p.dy
+        else:
+            self.target_string = target_string
+            self.simularity = .7
+            self.dx, self.dy = 0, 0
 
 
-def _get_target_from_string(target_string, *args, **kwargs):
-    target_file_loc = _find_local_file(target_string)
-    if not target_file_loc:
-        try:        
-            target_file_loc = URL(target_string)
-        except:
-            target_file_loc = None
-                        
-    return ImageTarget(target_file_loc)
+    def exact(self):
+        self.simularity = 0.99
+        return self
 
 
-def _find_local_file(target_string):
-    
-    # Check the relative path
-    poss_relative_path = os.path.join(os.getcwd(), target_string)
-    if os.path.exists(poss_relative_path):
-        return File(poss_relative_path)
-        
-    # Check the absolute path
-    elif os.path.exists(target_string):
-        return File(target_string)    
-    
-    else:
-        return None
+    def targetOffset(self, x, y):
+        self.dx, self.dy = x, y
+        return self
+
+
+    def similar(self, simularity):
+        self.simularity = simularity
+        return self
+
+
+    def getTarget(self):
+        return self._get_target_from_string(self.target_string)
+
+
+    def getLocation(self):
+        t = self.getTarget()
+        region = find(self)
+        loc = region.getCenter()
+        loc.setX(loc.getX() + self.dx)
+        loc.setY(loc.getY() + self.dy)
+        return loc
+
+
+    def _get_target_from_string(self, target_string):
+        target_file_loc = self._find_local_file(target_string)
+        if not target_file_loc:
+            try:
+                target_file_loc = URL(target_string)
+            except:
+                target_file_loc = None
+        target = ImageTarget(target_file_loc)
+        target.setMinScore(self.simularity)
+        return target
+
+
+    def _find_local_file(self, target_string):
+
+        # Check the relative path
+        poss_relative_path = os.path.join(os.getcwd(), target_string)
+        if os.path.exists(poss_relative_path):
+            return File(poss_relative_path)
+
+        # Check the absolute path
+        elif os.path.exists(target_string):
+            return File(target_string)
+
+        else:
+            return None
