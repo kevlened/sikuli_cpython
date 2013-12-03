@@ -1,11 +1,16 @@
 from setuptools import setup, find_packages
 import sys
 
+# Temporarily download dependencies from my own host
+github = "https://github.com/kevlened/pyjnius/releases/download"
+
 if sys.platform == 'win32':
-    # Temporarily download dependencies from my own host
-    github = "https://github.com/kevlened/pyjnius/releases/download"
     dependency_links = [
         github + "/v1.1/jnius-1.1-dev.win32-py2.7.exe"
+    ]
+else:
+    dependency_links = [
+        github + "/v1.1/jnius-1.1-dev.tar.gz"
     ]
 
 setup(
