@@ -137,10 +137,12 @@ class Pattern:
     def getTarget(self):
         return self._get_target_from_string(self.target_string)
 
+    def find(self):
+        screen = DesktopScreenRegion()
+        return screen.find(self.getTarget())
 
     def getLocation(self):
-        t = self.getTarget()
-        region = find(self)
+        region = self.find()
         loc = region.getCenter()
         loc.setX(loc.getX() + self.dx)
         loc.setY(loc.getY() + self.dy)
