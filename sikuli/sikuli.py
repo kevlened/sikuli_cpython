@@ -50,9 +50,8 @@ class Sikuli:
         duration = self.wait_timeout
         if 'timeout' in kwargs and kwargs['timeout'] > 0:
             duration = kwargs['timeout']
-            target = Pattern(target_string).similar(self.similarity).getTarget()
-            screen = DesktopScreenRegion()
-            duration = 1
+        target = Pattern(target_string).similar(self.similarity).getTarget()
+        screen = DesktopScreenRegion()
         return screen.wait(target, duration)
 
 
