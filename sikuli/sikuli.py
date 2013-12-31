@@ -24,84 +24,88 @@ API = autoclass('org.sikuli.api.API')
 DesktopScreenRegion = autoclass('org.sikuli.api.DesktopScreenRegion')
 ImageTarget = autoclass('org.sikuli.api.ImageTarget')
 
+class Sikuli:
+    def __init__(self, **kwargs):
+        if 'similarity' in kwargs:
+            self.similarity = kwargs['similarity']
+        else:
+            self.similarity = 0.7
 
-def find(target_string, *args, **kwargs):
-    target = Pattern(target_string).getTarget()
-    screen = DesktopScreenRegion()
-    return screen.find(target)
+        if 'wait_timeout' in kwargs:
+            self.wait_timeout = kwargs['wait_timeout']
+        else:
+            self.wait_timeout = 5000
 
-
-def findAll(target_string, *args, **kwargs):
-    target = Pattern(target_string).getTarget()
-    screen = DesktopScreenRegion()
-    return screen.findAll(target)
-
-
-def wait(target_string, *args, **kwargs):
-    if not duration and duration != 0:
-        duration = 5000
-    target = Pattern(target_string).getTarget()
-    screen = DesktopScreenRegion()
-    return screen.wait(target, duration)
-
-
-# TODO: waitVanish
-
-
-def exists(target_string, *args, **kwargs):
-    target = Pattern(target_string).getTarget()
-    screen = DesktopScreenRegion()
-    try:
+    def find(self, target_string, *args, **kwargs):
+        target = Pattern(target_string).similar(self.similarity).getTarget()
+        screen = DesktopScreenRegion()
         return screen.find(target)
-    except Exception:
-        return None
+
+    def findAll(self, target_string, *args, **kwargs):
+        target = Pattern(target_string).similar(self.similarity).getTarget()
+        screen = DesktopScreenRegion()
+        return screen.findAll(target)
+
+    def wait(self, target_string, *args, **kwargs):
+        duration = self.wait_timeout
+        if 'timeout' in kwargs and kwargs['timeout'] > 0:
+            duration = kwargs['timeout']
+            target = Pattern(target_string).similar(self.similarity).getTarget()
+            screen = DesktopScreenRegion()
+            duration = 1
+        return screen.wait(target, duration)
 
 
-def click(target_string, *args, **kwargs):
-    loc = Pattern(target_string).getLocation()
-    m = DesktopMouse()
-    m.click(loc)
+    # TODO: waitVanish
 
 
-def doubleClick(target_string, *args, **kwargs):
-    loc = Pattern(target_string).getLocation()
-    m = DesktopMouse()
-    m.doubleClick(loc)
+    def exists(self, target_string, *args, **kwargs):
+        target = Pattern(target_string).similar(self.similarity).getTarget()
+        screen = DesktopScreenRegion()
+        try:
+            return screen.find(target)
+        except Exception:
+            return None
 
+    def click(self, target_string, *args, **kwargs):
+        loc = Pattern(target_string).similar(self.similarity).getLocation()
+        m = DesktopMouse()
+        m.click(loc)
 
-def rightClick(target_string, *args, **kwargs):
-    loc = Pattern(target_string).getLocation()
-    m = DesktopMouse()
-    m.rightClick(loc)
+    def doubleClick(self, target_string, *args, **kwargs):
+        loc = Pattern(target_string).similar(self.similarity).getLocation()
+        m = DesktopMouse()
+        m.doubleClick(loc)
 
+    def rightClick(self, target_string, *args, **kwargs):
+        loc = Pattern(target_string).similar(self.similarity).getLocation()
+        m = DesktopMouse()
+        m.rightClick(loc)
 
-def hover(target_string, *args, **kwargs):
-    loc = Pattern(target_string).getLocation()
-    m = DesktopMouse()
-    m.hover(loc)
+    def hover(self, target_string, *args, **kwargs):
+        loc = Pattern(target_string).similar(self.similarity).getLocation()
+        m = DesktopMouse()
+        m.hover(loc)
 
+    def dragDrop(self, target_string_1, target_string_2):
+        pat1 = Pattern(target_string_1).similar(self.similarity)
+        pat2 = Pattern(target_string_2).similar(self.similarity)
+        loc1 = pat1.getLocation()
+        loc2 = pat2.getLocation()
+        m = DesktopMouse()
+        m.drag(loc1)
+        m.drop(loc2)
 
-def dragDrop(target_string_1, target_string_2):
-    loc1 = Pattern(target_string_1).getLocation()
-    loc2 = Pattern(target_string_2).getLocation()
-    m = DesktopMouse()
-    m.drag(loc1)
-    m.drop(loc2)
+    def type(self, text):
+        k = DesktopKeyboard()
+        k.type(text)
 
+    def paste(self, text):
+        k = DesktopKeyboard()
+        k.paste(text)
 
-def type(text):
-    k = DesktopKeyboard()
-    k.type(text)
-
-
-def paste(text):
-    k = DesktopKeyboard()
-    k.paste(text)
-
-
-def browse(url):
-    API.browse(URL(url))
-
+    def browse(self, url):
+        API.browse(URL(url))
 
 class Pattern:
     def __init__(self, target_string):
@@ -112,9 +116,8 @@ class Pattern:
             self.dx, self.dy = p.dx, p.dy
         else:
             self.target_string = target_string
-            self.similarity = .7
+            self.similarity = 0.7
             self.dx, self.dy = 0, 0
-
 
     def exact(self):
         self.similarity = 0.99
@@ -157,7 +160,6 @@ class Pattern:
 
 
     def _find_local_file(self, target_string):
-
         # Check the relative path
         poss_relative_path = os.path.join(os.getcwd(), target_string)
         if os.path.exists(poss_relative_path):
@@ -166,6 +168,5 @@ class Pattern:
         # Check the absolute path
         elif os.path.exists(target_string):
             return File(target_string)
-
         else:
             return None
