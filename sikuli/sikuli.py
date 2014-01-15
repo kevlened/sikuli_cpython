@@ -24,6 +24,11 @@ API = autoclass('org.sikuli.api.API')
 DesktopScreenRegion = autoclass('org.sikuli.api.DesktopScreenRegion')
 ImageTarget = autoclass('org.sikuli.api.ImageTarget')
 
+class Setting():
+    hide_cursor = False
+
+SikuliSetting = Setting()
+
 class Sikuli:
     def __init__(self, **kwargs):
         if 'similarity' in kwargs:
@@ -35,18 +40,24 @@ class Sikuli:
             self.wait_timeout = kwargs['wait_timeout']
         else:
             self.wait_timeout = 5000
+        self.zero_location = DesktopMouse().getLocation()
+        self.zero_location.setX(0)
+        self.zero_location.setY(0)
 
     def find(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         target = Pattern(target_string).similar(self.similarity).getTarget()
         screen = DesktopScreenRegion()
         return screen.find(target)
 
     def findAll(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         target = Pattern(target_string).similar(self.similarity).getTarget()
         screen = DesktopScreenRegion()
         return screen.findAll(target)
 
     def wait(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         duration = self.wait_timeout
         if 'timeout' in kwargs and kwargs['timeout'] > 0:
             duration = kwargs['timeout']
@@ -54,11 +65,17 @@ class Sikuli:
         screen = DesktopScreenRegion()
         return screen.wait(target, duration)
 
+    def __hide_cursor(self):
+        global SikuliSetting
+        if SikuliSetting.hide_cursor:
+            m = DesktopMouse()
+            m.hover(self.zero_location)
 
     # TODO: waitVanish
 
 
     def exists(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         target = Pattern(target_string).similar(self.similarity).getTarget()
         screen = DesktopScreenRegion()
         try:
@@ -67,26 +84,31 @@ class Sikuli:
             return None
 
     def click(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         loc = Pattern(target_string).similar(self.similarity).getLocation()
         m = DesktopMouse()
         m.click(loc)
 
     def doubleClick(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         loc = Pattern(target_string).similar(self.similarity).getLocation()
         m = DesktopMouse()
         m.doubleClick(loc)
 
     def rightClick(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         loc = Pattern(target_string).similar(self.similarity).getLocation()
         m = DesktopMouse()
         m.rightClick(loc)
 
     def hover(self, target_string, *args, **kwargs):
+        self.__hide_cursor()
         loc = Pattern(target_string).similar(self.similarity).getLocation()
         m = DesktopMouse()
         m.hover(loc)
 
     def dragDrop(self, target_string_1, target_string_2):
+        self.__hide_cursor()
         pat1 = Pattern(target_string_1).similar(self.similarity)
         pat2 = Pattern(target_string_2).similar(self.similarity)
         loc1 = pat1.getLocation()
