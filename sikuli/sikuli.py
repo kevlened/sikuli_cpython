@@ -6,7 +6,7 @@ if sys.platform == 'win32':
 else:
     separator = ':'
 
-jarpath = separator + os.path.dirname(os.path.realpath(__file__)) + "/sikuli-api-1.0.2-standalone.jar"
+jarpath = separator + os.path.dirname(os.path.realpath(__file__)) + "/sikuli-api-1.0.3-standalone.jar"
 if not 'CLASSPATH' in os.environ:
     os.environ['CLASSPATH'] = jarpath
 else:
