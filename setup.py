@@ -15,7 +15,7 @@ else:
 
 setup(
     name='sikuli',
-    version='0.1',
+    version='0.2',
     description='A CPython wrapper around the sikuli standalone jar',
     author='Len Boyette',
     author_email='boyettel+sikuli@gmail.com',
